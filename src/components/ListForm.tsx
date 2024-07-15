@@ -3,33 +3,48 @@ import React, {useEffect, useState} from "react";
 import {fetchTaskThunk, getListThunk} from "../containers/List/listSlice.ts";
 import {AppDispatch, RootState} from "../app/store.ts";
 
+export interface List {
+    title: string;
+    status: boolean;
+}
 
 const ListForm = () => {
-    const [taskTitle, setTaskTitle] = useState('');
+    const [taskTitle, setTaskTitle] = useState<List[]>([]);
     const listValue= useSelector((state: RootState) => state.list.value);
     const dispatch: AppDispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(fetchTaskThunk());
+        dispatch(fetchTaskThunk(listValue));
     }, [dispatch]);
 
+    useEffect(() => {
+        if (listValue.title) {
+            setTaskTitle((prev) => [...prev, listValue]);
+        }
+    }, [listValue]);
+
     const getList = async () => {
-        await dispatch(fetchTaskThunk());
+        await dispatch(fetchTaskThunk(listValue));
         await dispatch(getListThunk());
     };
 
     const onFormSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        dispatch(fetchTaskThunk());
+        dispatch(fetchTaskThunk(listValue));
         void getList();
         void getList();
     };
 
     const formChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setTaskTitle(event.target.value);
+        const updatedTask = {
+            ...listValue,
+            title: event.target.value,
+        };
+        dispatch(fetchTaskThunk(updatedTask));
     };
 
     console.log(listValue);
+    console.log(taskTitle);
 
     return (
         <form>
@@ -37,7 +52,7 @@ const ListForm = () => {
                 <label className="form-label mb-3">Enter task</label>
                 <input type="text"
                        className="form-control mb-3"
-                       value={taskTitle}
+                       value={listValue.title}
                        onChange={formChange}/>
                 <div className="form-text">To dol list</div>
             </div>

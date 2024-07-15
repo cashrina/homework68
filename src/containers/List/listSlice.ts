@@ -23,11 +23,14 @@ const initialState: State = {
     error: false,
 };
 
-export const fetchTaskThunk: AsyncThunk<List | null, void, { state: RootState }> = createAsyncThunk(
+export const fetchTaskThunk: AsyncThunk<List | null, List, { state: RootState }> = createAsyncThunk(
     'task/fetch',
-    async (_arg, thunkAPI) => {
+    async (updatedTask, thunkAPI) => {
         const taskList = thunkAPI.getState().list.value;
-        const { data: task } = await axiosApi.put<List | null>('/task.json', taskList);
+        const { data: task } = await axiosApi.put<List | null>('/task.json', {
+            ...taskList,
+            ...updatedTask,
+        });
         return task || null;
     }
 );
